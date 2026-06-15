@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Voice-to-Task</string>
+
+    <!-- Onboarding -->
+    <string name="skip">Bỏ qua</string>
+    <string name="onboarding_title">Ghi âm cuộc họp</string>
+    <string name="onboarding_subtitle">Tự động chuyển đổi giọng nói thành danh sách công việc thông minh với AI.</string>
+    <string name="get_started">Bắt đầu</string>
+
+    <!-- Login & Register -->
+    <string name="welcome_back">Chào mừng trở lại</string>
+    <string name="login_subtitle">Đăng nhập để tiếp tục quản lý công việc</string>
+    <string name="email">Email</string>
+    <string name="password">Mật khẩu</string>
+    <string name="forgot_password">Quên mật khẩu?</string>
+    <string name="sign_in">Đăng nhập</string>
+    <string name="or_sign_in_with">Hoặc đăng nhập bằng</string>
+    <string name="no_account">Chưa có tài khoản?</string>
+    <string name="sign_up_now">Đăng ký ngay</string>
+    <string name="create_account">Tạo tài khoản</string>
+    <string name="register_subtitle">Tham gia Voice-to-Task ngay hôm nay</string>
+    <string name="full_name">Họ và tên</string>
+    <string name="confirm_password">Xác nhận mật khẩu</string>
+    <string name="i_agree_to">Tôi đồng ý với các</string>
+    <string name="terms_and_policies">điều khoản và chính sách</string>
+    <string name="sign_up">Đăng ký</string>
+    <string name="already_have_account">Đã có tài khoản?</string>
+    <string name="forgot_password_title">Quên mật khẩu?</string>
+    <string name="forgot_password_desc">Vui lòng nhập email của bạn để nhận liên kết đặt lại mật khẩu.</string>
+    <string name="send_request">Gửi yêu cầu</string>
+    <string name="back_to_login">Quay lại Đăng nhập</string>
+    <string name="having_trouble">Bạn gặp sự cố?</string>
+    <string name="contact_support">Liên hệ Hỗ trợ</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_history">Lịch sử</string>
+    <string name="nav_settings">Cài đặt</string>
+
+    <!-- Dashboard -->
+    <string name="good_morning">Chào buổi sáng</string>
+    <string name="tasks_to_do_today">công việc cần làm hôm nay</string>
+    <string name="recorded_meetings">cuộc họp đã ghi âm</string>
+    <string name="search_tasks">Tìm kiếm công việc...</string>
+    <string name="task_list">Danh sách công việc</string>
+    <string name="see_all">Tất cả</string>
+    <string name="category_work">Công việc</string>
+    <string name="category_meeting">Họp hành</string>
+    <string name="category_personal">Cá nhân</string>
+
+    <!-- Recording -->
+    <string name="recording_task">Recording Task...</string>
+    <string name="upload_audio_file">Tải file âm thanh</string>
+
+    <!-- Task Details -->
+    <string name="task_details_title">Chi tiết</string>
+    <string name="task_name">Tên công việc</string>
+    <string name="task_notes">Ghi chú</string>
+    <string name="task_notes_placeholder">Thêm chi tiết về công việc này...</string>
+    <string name="category">Danh mục</string>
+    <string name="priority">Mức độ ưu tiên</string>
+    <string name="priority_high">Cao</string>
+    <string name="priority_medium">Trung bình</string>
+    <string name="priority_low">Thấp</string>
+    <string name="select_reminder_time">Chọn thời gian nhắc nhở</string>
+    <string name="completed">Đã hoàn thành</string>
+    <string name="save_changes">Lưu thay đổi</string>
+
+    <!-- Meeting History -->
+    <string name="meeting_history">Lịch sử cuộc họp</string>
+    <string name="search_meetings">Tìm kiếm cuộc họp...</string>
+    <string name="filter_this_week">Tuần này</string>
+    <string name="filter_this_month">Tháng này</string>
+    <string name="filter_has_task">Có tạo task</string>
+    <string name="filter_member">Thành viên</string>
+
+    <!-- Meeting Details -->
+    <string name="meeting_details">Chi tiết cuộc họp</string>
+    <string name="transcript">Transcript</string>
+    <string name="speaker_1">Speaker 1</string>
+    <string name="tasks_from_meeting">Công việc từ cuộc họp này</string>
+    <string name="today">Hôm nay</string>
+    <string name="tomorrow">Ngày mai</string>
+    <string name="add_task">Thêm công việc</string>
+
+    <!-- Settings -->
+    <string name="edit_profile">Chỉnh sửa Hồ sơ</string>
+    <string name="save">Lưu</string>
+    <string name="app_settings">Cài đặt Ứng dụng</string>
+    <string name="dark_mode">Chế độ tối (Dark Mode)</string>
+    <string name="cloud_sync">Đồng bộ Đám mây</string>
+    <string name="synced_recently">Đã đồng bộ 5 phút trước</string>
+    <string name="sync_now">Đồng bộ ngay</string>
+    <string name="recognition_language">Ngôn ngữ nhận diện</string>
+    <string name="vietnamese">Tiếng Việt</string>
+    <string name="sign_out">Đăng xuất</string>
+    <string name="display_name">Tên hiển thị</string>
+</resources>

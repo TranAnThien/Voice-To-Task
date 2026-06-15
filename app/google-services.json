@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "75666308152",
+    "project_id": "voice-to-task-60679",
+    "storage_bucket": "voice-to-task-60679.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:75666308152:android:141d53aee72543f5c23acd",
+        "android_client_info": {
+          "package_name": "com.project.voicetotask"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxdd1L0YvMoAhaK2ylBvsp0aUVs1jnSOo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

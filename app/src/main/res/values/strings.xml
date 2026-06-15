@@ -1,0 +1,98 @@
+<resources>
+    <string name="app_name">Voice-to-Task</string>
+
+    <!-- Onboarding -->
+    <string name="skip">Skip</string>
+    <string name="onboarding_title">Record meeting</string>
+    <string name="onboarding_subtitle">Automatically convert voice to smart task list with AI.</string>
+    <string name="get_started">Get started</string>
+
+    <!-- Login & Register -->
+    <string name="welcome_back">Welcome back</string>
+    <string name="login_subtitle">Sign in to continue managing tasks</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="sign_in">Sign in</string>
+    <string name="or_sign_in_with">Or sign in with</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="sign_up_now">Sign up now</string>
+    <string name="create_account">Create account</string>
+    <string name="register_subtitle">Join Voice-to-Task today</string>
+    <string name="full_name">Full name</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="i_agree_to">I agree to the</string>
+    <string name="terms_and_policies">terms and policies</string>
+    <string name="sign_up">Sign up</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="forgot_password_title">Forgot password?</string>
+    <string name="forgot_password_desc">Please enter your email to receive a password reset link.</string>
+    <string name="send_request">Send request</string>
+    <string name="back_to_login">Back to Sign in</string>
+    <string name="having_trouble">Having trouble?</string>
+    <string name="contact_support">Contact Support</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_history">History</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Dashboard -->
+    <string name="good_morning">Good morning</string>
+    <string name="tasks_to_do_today">tasks to do today</string>
+    <string name="recorded_meetings">recorded meetings</string>
+    <string name="search_tasks">Search tasks...</string>
+    <string name="task_list">Task list</string>
+    <string name="see_all">All</string>
+    <string name="category_work">Work</string>
+    <string name="category_meeting">Meeting</string>
+    <string name="category_personal">Personal</string>
+
+    <!-- Recording -->
+    <string name="recording_task">Recording Task...</string>
+    <string name="upload_audio_file">Upload audio file</string>
+
+    <!-- Task Details -->
+    <string name="task_details_title">Details</string>
+    <string name="task_name">Task name</string>
+    <string name="task_notes">Notes</string>
+    <string name="task_notes_placeholder">Add details about this task...</string>
+    <string name="category">Category</string>
+    <string name="priority">Priority</string>
+    <string name="priority_high">High</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_low">Low</string>
+    <string name="select_reminder_time">Select reminder time</string>
+    <string name="completed">Completed</string>
+    <string name="save_changes">Save changes</string>
+
+    <!-- Meeting History -->
+    <string name="meeting_history">Meeting history</string>
+    <string name="search_meetings">Search meetings...</string>
+    <string name="filter_this_week">This week</string>
+    <string name="filter_this_month">This month</string>
+    <string name="filter_has_task">Created task</string>
+    <string name="filter_member">Member</string>
+
+    <!-- Meeting Details -->
+    <string name="meeting_details">Meeting details</string>
+    <string name="transcript">Transcript</string>
+    <string name="speaker_1">Speaker 1</string>
+    <string name="tasks_from_meeting">Tasks from this meeting</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="add_task">Add task</string>
+
+    <!-- Settings -->
+    <string name="edit_profile">Edit Profile</string>
+    <string name="save">Save</string>
+    <string name="app_settings">App Settings</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="cloud_sync">Cloud Sync</string>
+    <string name="synced_recently">Synced 5 mins ago</string>
+    <string name="sync_now">Sync now</string>
+    <string name="recognition_language">Recognition language</string>
+    <string name="vietnamese">Vietnamese</string>
+    <string name="sign_out">Sign out</string>
+    <string name="display_name">Display name</string>
+</resources>
