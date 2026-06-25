@@ -18,12 +18,6 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindAiRepository(
-        aiRepositoryImpl: AiRepositoryImpl
-    ): AiRepository
-
-    @Binds
-    @Singleton
     abstract fun bindMeetingRepository(
         meetingRepositoryImpl: MeetingRepositoryImpl
     ): MeetingRepository
@@ -33,4 +27,10 @@ abstract class RepositoryModule {
     abstract fun bindTaskRepository(
         taskRepositoryImpl: TaskRepositoryImpl
     ): TaskRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAiRepository(
+        aiRepositoryImpl: AiRepositoryImpl
+    ): AiRepository
 }

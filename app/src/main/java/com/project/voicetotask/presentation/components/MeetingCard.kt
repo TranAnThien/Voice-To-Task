@@ -25,6 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.project.voicetotask.ui.theme.VoiceToTaskTheme
+
 @Composable
 fun MeetingCard(
     title: String,
@@ -118,6 +121,30 @@ fun MeetingCard(
                     )
                 }
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MeetingCardPreview() {
+    VoiceToTaskTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            MeetingCard(
+                title = "Weekly Project Sync",
+                date = "Oct 12, 2023",
+                duration = "45:00",
+                taskCount = 5,
+                onClick = {}
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            MeetingCard(
+                title = "Client Requirements Discussion",
+                date = "Oct 10, 2023",
+                duration = "01:20:00",
+                taskCount = 0,
+                onClick = {}
+            )
         }
     }
 }

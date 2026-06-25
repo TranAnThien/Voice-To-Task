@@ -20,11 +20,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -51,11 +55,22 @@ fun HomeScreen(
     onAvatarClick: () -> Unit,
     onStatsTaskClick: () -> Unit,
     onStatsMeetingClick: () -> Unit,
+    onAddTaskClick: () -> Unit,
+    onRecordClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onRecordClick,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(imageVector = Icons.Default.Mic, contentDescription = "Record")
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -100,11 +115,20 @@ fun HomeScreen(
                 }
 
                 item {
-                    Text(
-                        text = stringResource(id = R.string.task_list),
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.task_list),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        IconButton(onClick = onAddTaskClick) {
+                            Icon(imageVector = Icons.Default.Add, contentDescription = "Add task")
+                        }
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
@@ -301,7 +325,9 @@ fun HomeScreenPreview() {
             onTaskCheckedChange = { _, _ -> },
             onAvatarClick = {},
             onStatsTaskClick = {},
-            onStatsMeetingClick = {}
+            onStatsMeetingClick = {},
+            onAddTaskClick = {},
+            onRecordClick = {}
         )
     }
 }

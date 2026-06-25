@@ -26,6 +26,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.project.voicetotask.ui.theme.VoiceToTaskTheme
+
 @Composable
 fun TaskCard(
     title: String,
@@ -107,6 +110,30 @@ fun TaskCard(
                     }
                 }
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TaskCardPreview() {
+    VoiceToTaskTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            TaskCard(
+                title = "Meeting with Design Team",
+                category = "Work",
+                isCompleted = false,
+                onCheckedChange = {},
+                onClick = {}
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TaskCard(
+                title = "Buy groceries",
+                category = "Personal",
+                isCompleted = true,
+                onCheckedChange = {},
+                onClick = {}
+            )
         }
     }
 }

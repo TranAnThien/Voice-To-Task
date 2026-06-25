@@ -37,6 +37,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.project.voicetotask.R
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.project.voicetotask.ui.theme.VoiceToTaskTheme
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -301,4 +304,27 @@ private fun SignOutButton(
             .clickable(onClick = onSignOutClick)
             .padding(vertical = 16.dp)
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenPreview() {
+    VoiceToTaskTheme {
+        SettingsScreen(
+            uiState = SettingsUiState(
+                displayName = "Thien",
+                email = "thien@example.com",
+                darkModeEnabled = false,
+                cloudSyncEnabled = true,
+                lastSyncedTime = "Synced 5 mins ago",
+                recognitionLanguage = "Vietnamese"
+            ),
+            onEditProfileClick = {},
+            onDarkModeToggle = {},
+            onCloudSyncToggle = {},
+            onSyncNowClick = {},
+            onLanguageClick = {},
+            onSignOutClick = {}
+        )
+    }
 }

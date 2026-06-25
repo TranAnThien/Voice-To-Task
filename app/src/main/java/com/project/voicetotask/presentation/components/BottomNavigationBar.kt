@@ -19,6 +19,9 @@ import androidx.compose.ui.res.stringResource
 import com.project.voicetotask.R
 import com.project.voicetotask.presentation.navigation.Screen
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.project.voicetotask.ui.theme.VoiceToTaskTheme
+
 enum class BottomNavItem(
     val route: String,
     val selectedIcon: ImageVector,
@@ -69,5 +72,16 @@ fun BottomNavigationBar(
                 )
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BottomNavigationBarPreview() {
+    VoiceToTaskTheme {
+        BottomNavigationBar(
+            currentRoute = Screen.Home.route,
+            onNavigateToRoute = {}
+        )
     }
 }

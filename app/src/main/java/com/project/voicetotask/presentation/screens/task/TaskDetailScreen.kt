@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -47,7 +48,9 @@ fun TaskDetailScreen(
     onPriorityChange: (String) -> Unit,
     onCompletedChange: (Boolean) -> Unit,
     onSaveClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     onBackClick: () -> Unit,
+    showDeleteButton: Boolean,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -66,13 +69,23 @@ fun TaskDetailScreen(
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
+                actions = {
+                    if (showDeleteButton) {
+                        IconButton(onClick = onDeleteClick) {
+                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
                 )
             )
         },
         bottomBar = {
-            TaskDetailBottomBar(onSaveClick = onSaveClick)
+            TaskDetailBottomBar(
+                onSaveClick = onSaveClick,
+                enabled = uiState.canSave && !uiState.isLoading
+            )
         }
     ) { innerPadding ->
         Column(
@@ -88,6 +101,14 @@ fun TaskDetailScreen(
                 onTitleChange = onTitleChange,
                 onNotesChange = onNotesChange
             )
+            uiState.errorMessage?.let { message ->
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
             Spacer(modifier = Modifier.height(24.dp))
             TaskDetailCategorySelector(
                 selectedCategory = uiState.category,
@@ -240,7 +261,10 @@ private fun TaskDetailStatusToggle(
 }
 
 @Composable
-private fun TaskDetailBottomBar(onSaveClick: () -> Unit) {
+private fun TaskDetailBottomBar(
+    onSaveClick: () -> Unit,
+    enabled: Boolean
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -249,7 +273,8 @@ private fun TaskDetailBottomBar(onSaveClick: () -> Unit) {
     ) {
         PrimaryButton(
             text = stringResource(id = R.string.save_changes),
-            onClick = onSaveClick
+            onClick = onSaveClick,
+            enabled = enabled
         )
     }
 }
@@ -271,7 +296,9 @@ fun TaskDetailScreenPreview() {
             onPriorityChange = {},
             onCompletedChange = {},
             onSaveClick = {},
-            onBackClick = {}
+            onDeleteClick = {},
+            onBackClick = {},
+            showDeleteButton = true
         )
     }
 }

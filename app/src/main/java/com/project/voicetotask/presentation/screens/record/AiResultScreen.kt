@@ -36,6 +36,9 @@ import com.project.voicetotask.presentation.components.PrimaryButton
 import com.project.voicetotask.presentation.components.TaskCard
 import com.project.voicetotask.presentation.screens.task.TaskModel
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.project.voicetotask.ui.theme.VoiceToTaskTheme
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AiResultScreen(
@@ -102,6 +105,15 @@ fun AiResultScreen(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(16.dp))
+
+                if (uiState.tasks.isEmpty()) {
+                    Text(
+                        text = "No tasks were detected from this transcript.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
             
             items(uiState.tasks, key = { it.id }) { task ->
@@ -155,5 +167,27 @@ fun AiResultScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AiResultScreenPreview() {
+    VoiceToTaskTheme {
+        AiResultScreen(
+            uiState = AiResultUiState(
+                summary = "We discussed the upcoming launch and assigned tasks for the marketing team. John will handle social media ads, and Sarah will draft the email newsletter.",
+                tasks = listOf(
+                    TaskModel("1", "Setup social media ads", "Marketing", false),
+                    TaskModel("2", "Draft email newsletter", "Marketing", false),
+                    TaskModel("3", "Follow up with influencers", "PR", true)
+                )
+            ),
+            onBackClick = {},
+            onSaveTasksClick = {},
+            onTaskDismiss = {},
+            onTaskClick = {},
+            onTaskCheckedChange = { _, _ -> }
+        )
     }
 }

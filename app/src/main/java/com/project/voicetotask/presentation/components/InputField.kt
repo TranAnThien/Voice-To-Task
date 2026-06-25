@@ -14,6 +14,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.project.voicetotask.ui.theme.VoiceToTaskTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+
 @Composable
 fun InputField(
     value: String,
@@ -51,4 +60,33 @@ fun InputField(
         ),
         textStyle = MaterialTheme.typography.bodyLarge
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InputFieldPreview() {
+    VoiceToTaskTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            InputField(
+                value = "",
+                onValueChange = {},
+                label = "Empty State"
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            InputField(
+                value = "user@example.com",
+                onValueChange = {},
+                label = "With Icon",
+                leadingIcon = Icons.Default.Email
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            InputField(
+                value = "invalid-email",
+                onValueChange = {},
+                label = "Error State",
+                isError = true,
+                errorMessage = "Invalid email format"
+            )
+        }
+    }
 }

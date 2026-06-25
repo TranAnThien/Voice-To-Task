@@ -2,17 +2,18 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.hilt.android)
     alias(libs.plugins.roborazzi)
     alias(libs.plugins.secrets)
 }
 
 android {
     namespace = "com.project.voicetotask"
-    compileSdk { version = release(36) { minorApiLevel = 1 } }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.project.voicetotask"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -72,10 +73,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     // implementation(libs.accompanist.permissions)
     implementation(libs.androidx.activity.compose)
-    // implementation(libs.androidx.camera.camera2)
-    // implementation(libs.androidx.camera.core)
-    // implementation(libs.androidx.camera.lifecycle)
-    // implementation(libs.androidx.camera.view)
+    implementation(libs.accompanist.permissions)
     implementation(libs.androidx.compose.material.icons.core)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.material3)
@@ -90,6 +88,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.common)
     // implementation(libs.coil.compose)
     implementation(libs.converter.moshi)
     // implementation(libs.firebase.ai)

@@ -21,20 +21,24 @@ class ProcessMeetingUseCase @Inject constructor(
             Resource.Loading -> return Resource.Loading
             is Resource.Success -> {
                 val transcript = transcribeResult.data
+                val meetingId = UUID.randomUUID().toString()
+                val meeting = Meeting(
+                    id = meetingId,
+                    title = "New Meeting", // We might want to generate a title, but this is fine for now
+                    date = System.currentTimeMillis(),
+                    duration = 0L, // Real duration is not available in the current processing contract.
+                    transcript = transcript,
+                    audioFilePath = audioFile.absolutePath
+                )
+
                 when (val extractResult = aiRepository.extractTasks(transcript)) {
-                    is Resource.Error -> return Resource.Error(extractResult.message, extractResult.cause)
+                    is Resource.Error -> {
+                        meetingRepository.insertMeeting(meeting)
+                        return Resource.Success(Pair(meeting, emptyList()))
+                    }
                     Resource.Loading -> return Resource.Loading
                     is Resource.Success -> {
                         val tasks = extractResult.data
-                        val meetingId = UUID.randomUUID().toString()
-                        val meeting = Meeting(
-                            id = meetingId,
-                            title = "New Meeting", // We might want to generate a title, but this is fine for now
-                            date = System.currentTimeMillis(),
-                            duration = 0L, // Need real duration if possible, mock for now
-                            transcript = transcript,
-                            audioFilePath = audioFile.absolutePath
-                        )
                         meetingRepository.insertMeeting(meeting)
 
                         val updatedTasks = tasks.map { 

@@ -12,6 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.ui.tooling.preview.Preview
+import com.project.voicetotask.ui.theme.VoiceToTaskTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+
 @Composable
 fun PrimaryButton(
     text: String,
@@ -35,5 +41,24 @@ fun PrimaryButton(
             text = text,
             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PrimaryButtonPreview() {
+    VoiceToTaskTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            PrimaryButton(
+                text = "Enabled Button",
+                onClick = {}
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            PrimaryButton(
+                text = "Disabled Button",
+                onClick = {},
+                enabled = false
+            )
+        }
     }
 }

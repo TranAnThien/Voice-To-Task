@@ -30,6 +30,10 @@ class TaskRepositoryImpl @Inject constructor(
         return taskDao.getTaskById(id).map { it?.toDomain() }
     }
 
+    override suspend fun getTaskOnce(id: String): Task? {
+        return taskDao.getTaskOnce(id)?.toDomain()
+    }
+
     override suspend fun insertTask(task: Task) {
         taskDao.insertTask(task.toEntity())
     }
@@ -40,5 +44,13 @@ class TaskRepositoryImpl @Inject constructor(
 
     override suspend fun deleteTask(task: Task) {
         taskDao.deleteTask(task.toEntity())
+    }
+
+    override suspend fun deleteTaskById(id: String) {
+        taskDao.deleteTaskById(id)
+    }
+
+    override suspend fun setTaskCompleted(id: String, isCompleted: Boolean) {
+        taskDao.setTaskCompleted(id, isCompleted)
     }
 }

@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import com.project.voicetotask.R
 import com.project.voicetotask.presentation.components.InputField
 import com.project.voicetotask.presentation.components.MeetingCard
+import androidx.compose.ui.tooling.preview.Preview
+import com.project.voicetotask.ui.theme.VoiceToTaskTheme
 
 @Composable
 fun HistoryScreen(
@@ -151,6 +153,17 @@ private fun HistoryList(
         contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        if (meetings.isEmpty()) {
+            item {
+                Text(
+                    text = "No meetings yet",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 24.dp)
+                )
+            }
+        }
+
         items(meetings, key = { it.id }) { meeting ->
             MeetingCard(
                 title = meeting.title,
@@ -160,5 +173,25 @@ private fun HistoryList(
                 onClick = { onMeetingClick(meeting) }
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HistoryScreenPreview() {
+    VoiceToTaskTheme {
+        HistoryScreen(
+            uiState = HistoryUiState(
+                meetings = listOf(
+                    MeetingModel("1", "Weekly Sync", "Oct 12, 2023", "45:00", 5),
+                    MeetingModel("2", "Project Kickoff", "Oct 11, 2023", "30:00", 3),
+                    MeetingModel("3", "Client Interview", "Oct 10, 2023", "01:15:00", 2)
+                ),
+                activeFilter = "All"
+            ),
+            onSearchChange = {},
+            onFilterChange = {},
+            onMeetingClick = {}
+        )
     }
 }

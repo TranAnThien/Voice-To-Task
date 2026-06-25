@@ -7,5 +7,9 @@ data class TaskDetailUiState(
     val category: String = "Work",
     val priority: String = "Medium",
     val isCompleted: Boolean = false,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isEditMode: Boolean = false,
+    val canSave: Boolean = false,
+    val isFinished: Boolean = false,
+    val errorMessage: String? = null
 )
