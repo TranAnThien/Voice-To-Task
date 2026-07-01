@@ -23,7 +23,13 @@ object DatabaseModule {
             context,
             VoiceTaskDatabase::class.java,
             "voice_task_db"
-        ).build()
+        )
+            .addMigrations(
+                VoiceTaskDatabase.MIGRATION_1_2,
+                VoiceTaskDatabase.MIGRATION_2_3,
+                VoiceTaskDatabase.MIGRATION_3_4
+            )
+            .build()
     }
 
     @Provides

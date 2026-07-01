@@ -19,9 +19,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,8 +40,9 @@ import com.project.voicetotask.ui.theme.VoiceToTaskTheme
 fun HistoryScreen(
     uiState: HistoryUiState,
     onSearchChange: (String) -> Unit,
-    onFilterChange: (String) -> Unit,
+    onFilterChange: (HistoryFilter) -> Unit,
     onMeetingClick: (MeetingModel) -> Unit,
+    onExportBackupClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -51,7 +55,10 @@ fun HistoryScreen(
                 .padding(innerPadding)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            HistoryHeader(modifier = Modifier.padding(horizontal = 24.dp))
+            HistoryHeader(
+                onExportBackupClick = onExportBackupClick,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
             Spacer(modifier = Modifier.height(24.dp))
             HistorySearch(
                 searchQuery = uiState.searchQuery,
@@ -67,6 +74,7 @@ fun HistoryScreen(
             Spacer(modifier = Modifier.height(24.dp))
             HistoryList(
                 meetings = uiState.meetings,
+                emptyMessage = uiState.emptyMessage,
                 onMeetingClick = onMeetingClick,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -75,13 +83,24 @@ fun HistoryScreen(
 }
 
 @Composable
-private fun HistoryHeader(modifier: Modifier = Modifier) {
-    Text(
-        text = stringResource(id = R.string.meeting_history),
-        style = MaterialTheme.typography.displayMedium,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = modifier
-    )
+private fun HistoryHeader(
+    onExportBackupClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(id = R.string.meeting_history),
+            style = MaterialTheme.typography.displayMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        TextButton(onClick = onExportBackupClick) {
+            Text("Backup JSON")
+        }
+    }
 }
 
 @Composable
@@ -102,24 +121,17 @@ private fun HistorySearch(
 
 @Composable
 private fun HistoryFilters(
-    activeFilter: String,
-    onFilterChange: (String) -> Unit,
+    activeFilter: HistoryFilter,
+    onFilterChange: (HistoryFilter) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val filters = listOf(
-        stringResource(id = R.string.see_all),
-        stringResource(id = R.string.filter_this_week),
-        stringResource(id = R.string.filter_this_month),
-        stringResource(id = R.string.filter_has_task)
-    )
-    
     Row(
         modifier = modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        filters.forEach { filter ->
+        HistoryFilter.entries.forEach { filter ->
             val isSelected = filter == activeFilter
             Box(
                 modifier = Modifier
@@ -132,7 +144,7 @@ private fun HistoryFilters(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = filter,
+                    text = filter.label,
                     style = MaterialTheme.typography.labelLarge,
                     color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
                     else MaterialTheme.colorScheme.onSurfaceVariant
@@ -145,6 +157,7 @@ private fun HistoryFilters(
 @Composable
 private fun HistoryList(
     meetings: List<MeetingModel>,
+    emptyMessage: String,
     onMeetingClick: (MeetingModel) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -155,12 +168,25 @@ private fun HistoryList(
     ) {
         if (meetings.isEmpty()) {
             item {
-                Text(
-                    text = "No meetings yet",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(vertical = 24.dp)
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 48.dp),
+                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.History,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(emptyMessage, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Try another search or filter.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
 
@@ -170,6 +196,9 @@ private fun HistoryList(
                 date = meeting.date,
                 duration = meeting.duration,
                 taskCount = meeting.taskCount,
+                summaryPreview = meeting.summaryPreview,
+                badges = meeting.badges,
+                assigneePreview = meeting.assigneePreview,
                 onClick = { onMeetingClick(meeting) }
             )
         }
@@ -183,15 +212,25 @@ fun HistoryScreenPreview() {
         HistoryScreen(
             uiState = HistoryUiState(
                 meetings = listOf(
-                    MeetingModel("1", "Weekly Sync", "Oct 12, 2023", "45:00", 5),
-                    MeetingModel("2", "Project Kickoff", "Oct 11, 2023", "30:00", 3),
-                    MeetingModel("3", "Client Interview", "Oct 10, 2023", "01:15:00", 2)
+                    MeetingModel(
+                        id = "1",
+                        title = "Weekly Sync",
+                        date = "Oct 12, 2023 09:00",
+                        duration = "45:00",
+                        taskCount = 5,
+                        summaryPreview = "Reviewed launch scope and open blockers.",
+                        badges = listOf("Decisions", "Blockers"),
+                        assigneePreview = "Me, An"
+                    ),
+                    MeetingModel("2", "Project Kickoff", "Oct 11, 2023 10:00", "30:00", 3),
+                    MeetingModel("3", "Client Interview", "Oct 10, 2023 14:00", "01:15:00", 2)
                 ),
-                activeFilter = "All"
+                activeFilter = HistoryFilter.ALL
             ),
             onSearchChange = {},
             onFilterChange = {},
-            onMeetingClick = {}
+            onMeetingClick = {},
+            onExportBackupClick = {}
         )
     }
 }

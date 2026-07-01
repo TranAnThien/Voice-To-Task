@@ -1,7 +1,9 @@
 package com.project.voicetotask.di
 
+import com.project.voicetotask.data.device.AndroidAudioDurationReader
 import com.project.voicetotask.data.device.AndroidAudioRecorder
 import com.project.voicetotask.data.device.ExoAudioPlayer
+import com.project.voicetotask.domain.repository.AudioDurationReader
 import com.project.voicetotask.domain.repository.AudioPlayer
 import com.project.voicetotask.domain.repository.AudioRecorder
 import dagger.Binds
@@ -25,4 +27,10 @@ abstract class AudioModule {
     abstract fun bindAudioPlayer(
         exoAudioPlayer: ExoAudioPlayer
     ): AudioPlayer
+
+    @Binds
+    @Singleton
+    abstract fun bindAudioDurationReader(
+        androidAudioDurationReader: AndroidAudioDurationReader
+    ): AudioDurationReader
 }

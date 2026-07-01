@@ -11,16 +11,20 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MeetingDao {
-    @Query("SELECT * FROM meetings ORDER BY date DESC")
+    @Query("SELECT * FROM meetings WHERE isConfirmed = 1 ORDER BY date DESC")
     fun getAllMeetings(): Flow<List<MeetingEntity>>
 
     @Query("SELECT * FROM meetings WHERE id = :id")
     fun getMeetingById(id: String): Flow<MeetingEntity?>
 
+    @Query("SELECT * FROM meetings WHERE id = :id LIMIT 1")
+    suspend fun getMeetingOnce(id: String): MeetingEntity?
+
     @Query("""
         SELECT meetings.* FROM meetings
         JOIN meetings_fts ON meetings.rowid = meetings_fts.rowid
         WHERE meetings_fts MATCH :query
+        AND meetings.isConfirmed = 1
         ORDER BY date DESC
     """)
     fun searchMeetings(query: String): Flow<List<MeetingEntity>>
@@ -28,10 +32,37 @@ interface MeetingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMeeting(meeting: MeetingEntity)
 
-    @Query("UPDATE meetings SET title = :title, date = :date, duration = :duration, transcript = :transcript, audioFilePath = :audioFilePath WHERE id = :id")
-    suspend fun updateMeetingFields(id: String, title: String, date: Long, duration: Long, transcript: String, audioFilePath: String?)
+    @Query("""
+        UPDATE meetings SET
+            title = :title,
+            date = :date,
+            duration = :duration,
+            transcript = :transcript,
+            audioFilePath = :audioFilePath,
+            summary = :summary,
+            decisionsText = :decisionsText,
+            blockersText = :blockersText,
+            followUpsText = :followUpsText,
+            isConfirmed = :isConfirmed
+        WHERE id = :id
+    """)
+    suspend fun updateMeetingFields(
+        id: String,
+        title: String,
+        date: Long,
+        duration: Long,
+        transcript: String,
+        audioFilePath: String?,
+        summary: String,
+        decisionsText: String,
+        blockersText: String,
+        followUpsText: String,
+        isConfirmed: Boolean
+    )
+
+    @Query("UPDATE meetings SET isConfirmed = 1 WHERE id = :id")
+    suspend fun confirmMeeting(id: String)
 
     @Query("DELETE FROM meetings WHERE id = :id")
     suspend fun deleteMeetingById(id: String)
-
 }

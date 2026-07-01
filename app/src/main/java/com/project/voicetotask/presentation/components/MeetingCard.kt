@@ -2,6 +2,7 @@ package com.project.voicetotask.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,9 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -24,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 
 import androidx.compose.ui.tooling.preview.Preview
 import com.project.voicetotask.ui.theme.VoiceToTaskTheme
@@ -34,6 +41,9 @@ fun MeetingCard(
     date: String,
     duration: String,
     taskCount: Int,
+    summaryPreview: String = "",
+    badges: List<String> = emptyList(),
+    assigneePreview: String = "",
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -89,6 +99,35 @@ fun MeetingCard(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+                        if (summaryPreview.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = summaryPreview,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        if (assigneePreview.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Groups,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = assigneePreview,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
                     }
 
                     if (taskCount > 0) {
@@ -114,15 +153,53 @@ fun MeetingCard(
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.outline
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = duration,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.outline
                     )
                 }
+                if (badges.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+                    ) {
+                        badges.forEach { badge ->
+                            MeetingBadge(text = badge)
+                        }
+                    }
+                }
             }
         }
     }
+}
+
+@Composable
+private fun MeetingBadge(text: String) {
+    AssistChip(
+        onClick = {},
+        label = {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelSmall
+            )
+        },
+        colors = AssistChipDefaults.assistChipColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+            labelColor = MaterialTheme.colorScheme.onTertiaryContainer
+        ),
+        border = null
+    )
 }
 
 @Preview(showBackground = true)
@@ -135,6 +212,9 @@ fun MeetingCardPreview() {
                 date = "Oct 12, 2023",
                 duration = "45:00",
                 taskCount = 5,
+                summaryPreview = "Discussed release scope and Android tasks.",
+                badges = listOf("Decisions", "Blockers"),
+                assigneePreview = "Me, An",
                 onClick = {}
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -143,6 +223,7 @@ fun MeetingCardPreview() {
                 date = "Oct 10, 2023",
                 duration = "01:20:00",
                 taskCount = 0,
+                summaryPreview = "Reviewed client requirements and follow-up items.",
                 onClick = {}
             )
         }

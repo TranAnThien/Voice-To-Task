@@ -23,5 +23,15 @@ data class MeetingEntity(
     @ColumnInfo(name = "transcript")
     val transcript: String,
     @ColumnInfo(name = "audioFilePath")
-    val audioFilePath: String?
+    val audioFilePath: String?,
+    @ColumnInfo(name = "summary", defaultValue = "''")
+    val summary: String,
+    @ColumnInfo(name = "decisionsText", defaultValue = "''")
+    val decisionsText: String,
+    @ColumnInfo(name = "blockersText", defaultValue = "''")
+    val blockersText: String,
+    @ColumnInfo(name = "followUpsText", defaultValue = "''")
+    val followUpsText: String,
+    @ColumnInfo(name = "isConfirmed", defaultValue = "1")
+    val isConfirmed: Boolean
 )

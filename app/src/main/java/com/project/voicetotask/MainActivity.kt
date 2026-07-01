@@ -1,6 +1,14 @@
 package com.project.voicetotask
 
+import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -21,6 +29,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -30,6 +40,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.project.voicetotask.presentation.components.BottomNavigationBar
+import com.project.voicetotask.data.reminder.TaskReminderContract
+import com.project.voicetotask.presentation.export.ExportFormatter
 import com.project.voicetotask.presentation.navigation.Screen
 import com.project.voicetotask.presentation.screens.history.HistoryScreen
 import com.project.voicetotask.presentation.screens.history.HistoryViewModel
@@ -48,28 +60,66 @@ import com.project.voicetotask.presentation.screens.task.TaskDetailViewModel
 import com.project.voicetotask.presentation.screens.task.TaskDetailViewModel.Companion.NEW_TASK_ID
 import dagger.hilt.android.AndroidEntryPoint
 import com.project.voicetotask.ui.theme.VoiceToTaskTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+import java.io.File
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+  private val reminderNavigation = MutableStateFlow<ReminderNavigation?>(null)
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
+    reminderNavigation.value = intent.toReminderNavigation()
     setContent {
+      val reminderDestination by reminderNavigation.collectAsState()
       VoiceToTaskTheme {
-        VoiceToTaskAppNav()
+        VoiceToTaskAppNav(
+          initialTaskId = reminderDestination?.taskId,
+          reminderNavigationEvent = reminderDestination?.eventId
+        )
       }
     }
   }
+
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    reminderNavigation.value = intent.toReminderNavigation()
+  }
+
+  private fun Intent.toReminderNavigation(): ReminderNavigation? {
+    val taskId = getStringExtra(TaskReminderContract.EXTRA_TASK_ID)
+      ?.takeIf { it.isNotBlank() }
+      ?: return null
+    return ReminderNavigation(taskId = taskId, eventId = System.nanoTime())
+  }
 }
+
+private data class ReminderNavigation(
+    val taskId: String,
+    val eventId: Long
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VoiceToTaskAppNav() {
+fun VoiceToTaskAppNav(
+    initialTaskId: String? = null,
+    reminderNavigationEvent: Long? = null
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val context = LocalContext.current
     var showRecordSheet by remember { mutableStateOf(false) }
+
+    LaunchedEffect(initialTaskId, reminderNavigationEvent) {
+        if (!initialTaskId.isNullOrBlank()) {
+            navController.navigate(Screen.TaskDetails.createRoute(initialTaskId)) {
+                launchSingleTop = true
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -114,6 +164,7 @@ fun VoiceToTaskAppNav() {
                         navController.navigate(Screen.TaskDetails.createRoute(taskId))
                     },
                     onTaskCheckedChange = viewModel::toggleTaskCompletion,
+                    onTaskDelete = viewModel::deleteTask,
                     onAvatarClick = { /* Handle avatar click */ },
                     onStatsTaskClick = { /* Handle stats click */ },
                     onStatsMeetingClick = { 
@@ -122,7 +173,16 @@ fun VoiceToTaskAppNav() {
                     onAddTaskClick = {
                         navController.navigate(Screen.TaskDetails.createRoute(NEW_TASK_ID))
                     },
-                    onRecordClick = { showRecordSheet = true }
+                    onRecordClick = { showRecordSheet = true },
+                    onExportTasksClick = {
+                        shareTextFile(
+                            context = context,
+                            chooserTitle = "Export visible tasks",
+                            fileName = "tasks_export_${ExportFormatter.timestampForFile()}.csv",
+                            mimeType = "text/csv",
+                            text = ExportFormatter.visibleTasksCsv(uiState.recentTasks)
+                        )
+                    }
                 )
 
                 // Trigger record sheet (e.g., from a FAB or specific action)
@@ -141,14 +201,21 @@ fun VoiceToTaskAppNav() {
                         amplitude = amplitude,
                         onStartRecording = { recordViewModel.startRecording(context) },
                         onStopRecording = { recordViewModel.stopRecordingAndProcess() },
+                        onPauseResume = recordViewModel::togglePauseRecording,
+                        onCancelRecording = recordViewModel::cancelRecording,
+                        onRetryProcessing = recordViewModel::retryProcessing,
+                        onDeleteCurrentAudio = recordViewModel::deleteCurrentAudio,
+                        onPromptProfileSelected = recordViewModel::onPromptProfileSelected,
                         onUploadClick = { audioPickerLauncher.launch("audio/*") },
                         onDismissRequest = { showRecordSheet = false }
                     )
 
-                    // Navigation logic when processing is done
-                    recordUiState.recentMeetingId?.let { meetingId ->
-                        showRecordSheet = false
-                        navController.navigate(Screen.AIResult.createRoute(meetingId))
+                    LaunchedEffect(recordUiState.recentMeetingId) {
+                        recordUiState.recentMeetingId?.let { meetingId ->
+                            recordViewModel.consumeRecentMeeting()
+                            showRecordSheet = false
+                            navController.navigate(Screen.AIResult.createRoute(meetingId))
+                        }
                     }
                 }
             }
@@ -163,6 +230,15 @@ fun VoiceToTaskAppNav() {
                     onFilterChange = viewModel::onFilterChange,
                     onMeetingClick = { meeting ->
                         navController.navigate(Screen.MeetingDetails.createRoute(meeting.id))
+                    },
+                    onExportBackupClick = {
+                        shareTextFile(
+                            context = context,
+                            chooserTitle = "Export local backup",
+                            fileName = "voice_to_task_backup_${ExportFormatter.timestampForFile()}.json",
+                            mimeType = "application/json",
+                            text = viewModel.buildBackupJson()
+                        )
                     }
                 )
             }
@@ -177,14 +253,86 @@ fun VoiceToTaskAppNav() {
                 MeetingDetailScreen(
                     uiState = uiState,
                     onBackClick = { navController.popBackStack() },
-                    onShareClick = { /* Handle share */ },
+                    onShareClick = {
+                        shareText(
+                            context = context,
+                            title = "Share meeting notes",
+                            text = viewModel.buildMeetingNotesText()
+                        )
+                    },
+                    onShareTranscript = {
+                        shareText(
+                            context = context,
+                            title = "Share transcript",
+                            text = viewModel.buildTranscriptText()
+                        )
+                    },
+                    onShareMeetingNotes = {
+                        shareText(
+                            context = context,
+                            title = "Share meeting notes",
+                            text = viewModel.buildMeetingNotesText()
+                        )
+                    },
                     onPlayPauseClick = { 
                         if (uiState.playerState.isPlaying) viewModel.pauseAudio()
                         else if (uiState.playerState.currentPosition > 0) viewModel.resumeAudio()
                         else viewModel.playAudio()
                     },
                     onSeek = viewModel::seekTo,
-                    onCopyTranscript = { /* Handle copy */ },
+                    onPlaybackSpeedChange = viewModel::setPlaybackSpeed,
+                    onCopyTranscript = {
+                        copyText(
+                            context = context,
+                            label = "Transcript",
+                            text = viewModel.buildTranscriptText(),
+                            confirmation = "Transcript copied."
+                        )
+                    },
+                    onCopySummary = {
+                        copyText(
+                            context = context,
+                            label = "Summary",
+                            text = viewModel.buildSummaryText(),
+                            confirmation = "Summary copied."
+                        )
+                    },
+                    onCopyMeetingNotes = {
+                        copyText(
+                            context = context,
+                            label = "Meeting notes",
+                            text = viewModel.buildMeetingNotesText(),
+                            confirmation = "Meeting notes copied."
+                        )
+                    },
+                    onExportTranscript = {
+                        shareTextFile(
+                            context = context,
+                            chooserTitle = "Export transcript",
+                            fileName = "meeting_transcript_${ExportFormatter.timestampForFile()}.txt",
+                            mimeType = "text/plain",
+                            text = ExportFormatter.meetingTranscriptText(uiState)
+                        )
+                    },
+                    onExportMeetingNotes = {
+                        shareTextFile(
+                            context = context,
+                            chooserTitle = "Export meeting notes",
+                            fileName = "meeting_notes_${ExportFormatter.timestampForFile()}.txt",
+                            mimeType = "text/plain",
+                            text = ExportFormatter.meetingNotesText(uiState)
+                        )
+                    },
+                    onExportLinkedTasks = {
+                        shareTextFile(
+                            context = context,
+                            chooserTitle = "Export linked tasks",
+                            fileName = "meeting_tasks_${ExportFormatter.timestampForFile()}.csv",
+                            mimeType = "text/csv",
+                            text = ExportFormatter.linkedTasksCsv(uiState.tasks)
+                        )
+                    },
+                    onTranscriptSearchChange = viewModel::onTranscriptSearchQueryChange,
                     onTaskCheckedChange = viewModel::toggleTaskCompletion,
                     onAddTaskClick = { /* Handle add task */ },
                     onTaskClick = { taskId ->
@@ -199,6 +347,20 @@ fun VoiceToTaskAppNav() {
             ) {
                 val viewModel: TaskDetailViewModel = hiltViewModel()
                 val uiState by viewModel.uiState.collectAsState()
+                val notificationPermissionLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { granted ->
+                    if (granted) {
+                        viewModel.save()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Task saved, but notifications are disabled.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        viewModel.save()
+                    }
+                }
 
                 LaunchedEffect(uiState.isFinished) {
                     if (uiState.isFinished) {
@@ -212,8 +374,27 @@ fun VoiceToTaskAppNav() {
                     onNotesChange = viewModel::onNotesChange,
                     onCategoryChange = viewModel::onCategoryChange,
                     onPriorityChange = viewModel::onPriorityChange,
+                    onAssigneeChange = viewModel::onAssigneeChange,
+                    onDueAtChange = viewModel::onDueAtChange,
                     onCompletedChange = viewModel::onCompletedChange,
-                    onSaveClick = viewModel::save,
+                    onReminderChange = viewModel::onReminderChange,
+                    onSaveClick = {
+                        val needsPermission =
+                            uiState.reminderTime != null &&
+                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) != PackageManager.PERMISSION_GRANTED
+
+                        if (needsPermission) {
+                            notificationPermissionLauncher.launch(
+                                Manifest.permission.POST_NOTIFICATIONS
+                            )
+                        } else {
+                            viewModel.save()
+                        }
+                    },
                     onDeleteClick = viewModel::delete,
                     onBackClick = { navController.popBackStack() },
                     showDeleteButton = uiState.isEditMode
@@ -227,20 +408,36 @@ fun VoiceToTaskAppNav() {
                 val viewModel: AiResultViewModel = hiltViewModel()
                 val uiState by viewModel.uiState.collectAsState()
 
+                LaunchedEffect(uiState.isFinished) {
+                    if (uiState.isFinished) {
+                        navController.popBackStack(Screen.Home.route, inclusive = false)
+                    }
+                }
+
                 AiResultScreen(
                     uiState = uiState,
-                    onBackClick = { navController.popBackStack() },
-                    onSaveTasksClick = { 
-                        viewModel.saveChanges()
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Home.route) { inclusive = true }
-                        }
-                    },
-                    onTaskDismiss = viewModel::onTaskDismissed,
-                    onTaskClick = { task ->
-                        navController.navigate(Screen.TaskDetails.createRoute(task.id))
-                    },
-                    onTaskCheckedChange = viewModel::onTaskCheckedChange
+                    onBackClick = viewModel::requestBack,
+                    onSaveTasksClick = viewModel::saveChanges,
+                    onDiscardClick = viewModel::discard,
+                    onStayClick = viewModel::stayOnResult,
+                    onMeetingSummaryChange = viewModel::onMeetingSummaryChange,
+                    onDecisionsChange = viewModel::onDecisionsChange,
+                    onBlockersChange = viewModel::onBlockersChange,
+                    onFollowUpsChange = viewModel::onFollowUpsChange,
+                    onAddTaskClick = viewModel::startAddingTask,
+                    onTaskDismiss = viewModel::requestTaskDelete,
+                    onTaskClick = viewModel::startEditingTask,
+                    onTaskCheckedChange = viewModel::onTaskCheckedChange,
+                    onCancelTaskDelete = viewModel::cancelTaskDelete,
+                    onConfirmTaskDelete = viewModel::confirmTaskDelete,
+                    onTaskTitleChange = viewModel::onEditingTaskTitleChange,
+                    onTaskDescriptionChange = viewModel::onEditingTaskDescriptionChange,
+                    onTaskAssigneeChange = viewModel::onEditingTaskAssigneeChange,
+                    onTaskDueAtChange = viewModel::onEditingTaskDueAtChange,
+                    onTaskCategoryChange = viewModel::onEditingTaskCategoryChange,
+                    onTaskPriorityChange = viewModel::onEditingTaskPriorityChange,
+                    onSaveTaskEdit = viewModel::saveEditingTask,
+                    onCancelTaskEdit = viewModel::cancelTaskEditing
                 )
             }
 
@@ -262,4 +459,51 @@ fun VoiceToTaskAppNav() {
             // Add other screens as needed (TaskDetails, MeetingDetails, etc.)
         }
     }
+}
+
+private fun copyText(
+    context: Context,
+    label: String,
+    text: String,
+    confirmation: String
+) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    clipboard.setPrimaryClip(ClipData.newPlainText(label, text))
+    Toast.makeText(context, confirmation, Toast.LENGTH_SHORT).show()
+}
+
+private fun shareText(
+    context: Context,
+    title: String,
+    text: String
+) {
+    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    context.startActivity(Intent.createChooser(sendIntent, title))
+}
+
+private fun shareTextFile(
+    context: Context,
+    chooserTitle: String,
+    fileName: String,
+    mimeType: String,
+    text: String
+) {
+    val exportDir = File(context.cacheDir, "exports").apply { mkdirs() }
+    val exportFile = File(exportDir, fileName)
+    exportFile.writeText(text, Charsets.UTF_8)
+    val uri = FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.fileprovider",
+        exportFile
+    )
+    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+        type = mimeType
+        putExtra(Intent.EXTRA_STREAM, uri)
+        putExtra(Intent.EXTRA_TEXT, text)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    context.startActivity(Intent.createChooser(sendIntent, chooserTitle))
 }

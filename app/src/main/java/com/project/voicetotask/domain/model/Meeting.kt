@@ -6,5 +6,10 @@ data class Meeting(
     val date: Long,
     val duration: Long,
     val transcript: String,
-    val audioFilePath: String?
+    val audioFilePath: String?,
+    val summary: String = "",
+    val decisionsText: String = "",
+    val blockersText: String = "",
+    val followUpsText: String = "",
+    val isConfirmed: Boolean = true
 )

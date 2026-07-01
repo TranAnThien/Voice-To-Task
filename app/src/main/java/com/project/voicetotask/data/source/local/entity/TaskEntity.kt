@@ -36,5 +36,9 @@ data class TaskEntity(
     @ColumnInfo(name = "reminderTime")
     val reminderTime: Long?,
     @ColumnInfo(name = "meetingId")
-    val meetingId: String?
+    val meetingId: String?,
+    @ColumnInfo(name = "assigneeName", defaultValue = "'Me'")
+    val assigneeName: String,
+    @ColumnInfo(name = "dueAt")
+    val dueAt: Long?
 )

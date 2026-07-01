@@ -76,6 +76,10 @@
 
     <!-- Meeting Details -->
     <string name="meeting_details">Meeting details</string>
+    <string name="meeting_summary">Meeting summary</string>
+    <string name="key_decisions">Key decisions</string>
+    <string name="blockers_risks">Blockers and risks</string>
+    <string name="follow_ups">Follow-ups</string>
     <string name="transcript">Transcript</string>
     <string name="speaker_1">Speaker 1</string>
     <string name="tasks_from_meeting">Tasks from this meeting</string>

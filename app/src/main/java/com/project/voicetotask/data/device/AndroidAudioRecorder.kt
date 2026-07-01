@@ -20,7 +20,7 @@ import java.io.File
 import javax.inject.Inject
 
 class AndroidAudioRecorder @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : AudioRecorder {
 
     private var recorder: MediaRecorder? = null

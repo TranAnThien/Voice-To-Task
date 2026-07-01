@@ -11,7 +11,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
-    @Query("SELECT * FROM tasks")
+    @Query("""
+        SELECT tasks.* FROM tasks
+        LEFT JOIN meetings ON tasks.meetingId = meetings.id
+        WHERE tasks.meetingId IS NULL OR meetings.isConfirmed = 1
+    """)
     fun getAllTasks(): Flow<List<TaskEntity>>
 
     @Query("SELECT * FROM tasks WHERE meetingId = :meetingId")

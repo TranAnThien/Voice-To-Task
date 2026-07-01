@@ -24,6 +24,10 @@ class MeetingRepositoryImpl @Inject constructor(
         return meetingDao.getMeetingById(id).map { it?.toDomain() }
     }
 
+    override suspend fun getMeetingOnce(id: String): Meeting? {
+        return meetingDao.getMeetingOnce(id)?.toDomain()
+    }
+
     override fun searchMeetings(query: String): Flow<List<Meeting>> {
         // Prepare query for FTS MATCH. SQLite FTS supports suffix wildcard.
         val ftsQuery = "$query*"
@@ -43,11 +47,24 @@ class MeetingRepositoryImpl @Inject constructor(
             date = meeting.date,
             duration = meeting.duration,
             transcript = meeting.transcript,
-            audioFilePath = meeting.audioFilePath
+            audioFilePath = meeting.audioFilePath,
+            summary = meeting.summary,
+            decisionsText = meeting.decisionsText,
+            blockersText = meeting.blockersText,
+            followUpsText = meeting.followUpsText,
+            isConfirmed = meeting.isConfirmed
         )
     }
 
     override suspend fun deleteMeeting(meeting: Meeting) {
         meetingDao.deleteMeetingById(meeting.id)
+    }
+
+    override suspend fun confirmMeeting(id: String) {
+        meetingDao.confirmMeeting(id)
+    }
+
+    override suspend fun deleteMeetingById(id: String) {
+        meetingDao.deleteMeetingById(id)
     }
 }

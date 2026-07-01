@@ -12,7 +12,9 @@ fun TaskEntity.toDomain(): Task {
         priority = priority,
         isCompleted = isCompleted,
         reminderTime = reminderTime,
-        meetingId = meetingId
+        meetingId = meetingId,
+        assigneeName = assigneeName,
+        dueAt = dueAt
     )
 }
 
@@ -25,6 +27,8 @@ fun Task.toEntity(): TaskEntity {
         priority = priority,
         isCompleted = isCompleted,
         reminderTime = reminderTime,
-        meetingId = meetingId
+        meetingId = meetingId,
+        assigneeName = assigneeName,
+        dueAt = dueAt
     )
 }

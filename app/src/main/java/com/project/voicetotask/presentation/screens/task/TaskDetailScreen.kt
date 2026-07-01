@@ -1,5 +1,7 @@
 package com.project.voicetotask.presentation.screens.task
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,16 +16,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -31,12 +37,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.project.voicetotask.R
 import com.project.voicetotask.presentation.components.InputField
 import com.project.voicetotask.presentation.components.PrimaryButton
 import com.project.voicetotask.ui.theme.VoiceToTaskTheme
+import java.text.DateFormat
+import java.util.Calendar
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +56,10 @@ fun TaskDetailScreen(
     onNotesChange: (String) -> Unit,
     onCategoryChange: (String) -> Unit,
     onPriorityChange: (String) -> Unit,
+    onAssigneeChange: (String) -> Unit,
+    onDueAtChange: (Long?) -> Unit,
     onCompletedChange: (Boolean) -> Unit,
+    onReminderChange: (Long?) -> Unit,
     onSaveClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -66,7 +79,7 @@ fun TaskDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -96,11 +109,14 @@ fun TaskDetailScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            TaskDetailForm(
-                uiState = uiState,
-                onTitleChange = onTitleChange,
-                onNotesChange = onNotesChange
-            )
+            TaskSection(title = "Task information") {
+                TaskDetailForm(
+                    uiState = uiState,
+                    onTitleChange = onTitleChange,
+                    onNotesChange = onNotesChange,
+                    onAssigneeChange = onAssigneeChange
+                )
+            }
             uiState.errorMessage?.let { message ->
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -109,22 +125,150 @@ fun TaskDetailScreen(
                     color = MaterialTheme.colorScheme.error
                 )
             }
-            Spacer(modifier = Modifier.height(24.dp))
-            TaskDetailCategorySelector(
-                selectedCategory = uiState.category,
-                onCategoryChange = onCategoryChange
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            TaskDetailPrioritySelector(
-                selectedPriority = uiState.priority,
-                onPriorityChange = onPriorityChange
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            TaskDetailStatusToggle(
-                isCompleted = uiState.isCompleted,
-                onCompletedChange = onCompletedChange
-            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TaskSection(title = "Classification") {
+                TaskDetailCategorySelector(
+                    selectedCategory = uiState.category,
+                    onCategoryChange = onCategoryChange
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                TaskDetailPrioritySelector(
+                    selectedPriority = uiState.priority,
+                    onPriorityChange = onPriorityChange
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            TaskSection(title = "Schedule") {
+                TaskDateTimeSelector(
+                    label = "Deadline - completion due",
+                    value = uiState.dueAt,
+                    emptyText = "No deadline",
+                    onValueChange = onDueAtChange
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                TaskReminderSelector(
+                    reminderTime = uiState.reminderTime,
+                    onReminderChange = onReminderChange
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            TaskSection(title = "Status") {
+                TaskDetailStatusToggle(
+                    isCompleted = uiState.isCompleted,
+                    onCompletedChange = onCompletedChange
+                )
+            }
             Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+private fun TaskSection(
+    title: String,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            content()
+        }
+    }
+}
+
+@Composable
+private fun TaskReminderSelector(
+    reminderTime: Long?,
+    onReminderChange: (Long?) -> Unit
+) {
+    TaskDateTimeSelector(
+        label = "Reminder - notification time",
+        value = reminderTime,
+        emptyText = "No reminder",
+        onValueChange = onReminderChange
+    )
+}
+
+@Composable
+private fun TaskDateTimeSelector(
+    label: String,
+    value: Long?,
+    emptyText: String,
+    onValueChange: (Long?) -> Unit
+) {
+    val context = LocalContext.current
+    val formattedValue = value?.let {
+        DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(it))
+    } ?: emptyText
+
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurface
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(
+        text = formattedValue,
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Button(
+            onClick = {
+                val initial = Calendar.getInstance().apply {
+                    timeInMillis = value ?: System.currentTimeMillis()
+                }
+                DatePickerDialog(
+                    context,
+                    { _, year, month, day ->
+                        TimePickerDialog(
+                            context,
+                            { _, hour, minute ->
+                                val selected = Calendar.getInstance().apply {
+                                    set(Calendar.YEAR, year)
+                                    set(Calendar.MONTH, month)
+                                    set(Calendar.DAY_OF_MONTH, day)
+                                    set(Calendar.HOUR_OF_DAY, hour)
+                                    set(Calendar.MINUTE, minute)
+                                    set(Calendar.SECOND, 0)
+                                    set(Calendar.MILLISECOND, 0)
+                                }
+                                onValueChange(selected.timeInMillis)
+                            },
+                            initial.get(Calendar.HOUR_OF_DAY),
+                            initial.get(Calendar.MINUTE),
+                            true
+                        ).show()
+                    },
+                    initial.get(Calendar.YEAR),
+                    initial.get(Calendar.MONTH),
+                    initial.get(Calendar.DAY_OF_MONTH)
+                ).apply {
+                    datePicker.minDate = System.currentTimeMillis()
+                }.show()
+            }
+        ) {
+            Text(if (value == null) "Set" else "Change")
+        }
+        if (value != null) {
+            OutlinedButton(onClick = { onValueChange(null) }) {
+                Text("Clear")
+            }
         }
     }
 }
@@ -133,7 +277,8 @@ fun TaskDetailScreen(
 private fun TaskDetailForm(
     uiState: TaskDetailUiState,
     onTitleChange: (String) -> Unit,
-    onNotesChange: (String) -> Unit
+    onNotesChange: (String) -> Unit,
+    onAssigneeChange: (String) -> Unit
 ) {
     InputField(
         value = uiState.title,
@@ -146,6 +291,12 @@ private fun TaskDetailForm(
         onValueChange = onNotesChange,
         label = stringResource(id = R.string.task_notes),
         modifier = Modifier.height(120.dp) // Taller input for notes
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    InputField(
+        value = uiState.assigneeName,
+        onValueChange = onAssigneeChange,
+        label = "Assignee"
     )
 }
 
@@ -294,7 +445,10 @@ fun TaskDetailScreenPreview() {
             onNotesChange = {},
             onCategoryChange = {},
             onPriorityChange = {},
+            onAssigneeChange = {},
+            onDueAtChange = {},
             onCompletedChange = {},
+            onReminderChange = {},
             onSaveClick = {},
             onDeleteClick = {},
             onBackClick = {},

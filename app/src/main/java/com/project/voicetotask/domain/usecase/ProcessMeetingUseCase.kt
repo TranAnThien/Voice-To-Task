@@ -1,5 +1,6 @@
 package com.project.voicetotask.domain.usecase
 
+import com.project.voicetotask.domain.model.AiPromptProfile
 import com.project.voicetotask.domain.model.Meeting
 import com.project.voicetotask.domain.model.Resource
 import com.project.voicetotask.domain.model.Task
@@ -15,30 +16,48 @@ class ProcessMeetingUseCase @Inject constructor(
     private val meetingRepository: MeetingRepository,
     private val taskRepository: TaskRepository
 ) {
-    suspend operator fun invoke(audioFile: File): Resource<Pair<Meeting, List<Task>>> {
+    suspend operator fun invoke(
+        audioFile: File,
+        durationMillis: Long,
+        profile: AiPromptProfile = AiPromptProfile.default
+    ): Resource<Pair<Meeting, List<Task>>> {
         when (val transcribeResult = aiRepository.transcribeAudio(audioFile)) {
             is Resource.Error -> return Resource.Error(transcribeResult.message, transcribeResult.cause)
             Resource.Loading -> return Resource.Loading
             is Resource.Success -> {
-                val transcript = transcribeResult.data
+                val rawTranscript = transcribeResult.data
                 val meetingId = UUID.randomUUID().toString()
-                val meeting = Meeting(
+                val baseMeeting = Meeting(
                     id = meetingId,
-                    title = "New Meeting", // We might want to generate a title, but this is fine for now
+                    title = "New Meeting",
                     date = System.currentTimeMillis(),
-                    duration = 0L, // Real duration is not available in the current processing contract.
-                    transcript = transcript,
-                    audioFilePath = audioFile.absolutePath
+                    duration = durationMillis.coerceAtLeast(0L),
+                    transcript = rawTranscript,
+                    audioFilePath = audioFile.absolutePath,
+                    summary = "",
+                    decisionsText = "",
+                    blockersText = "",
+                    followUpsText = "",
+                    isConfirmed = false
                 )
 
-                when (val extractResult = aiRepository.extractTasks(transcript)) {
+                when (val analysisResult = aiRepository.analyzeTranscript(rawTranscript, profile)) {
                     is Resource.Error -> {
-                        meetingRepository.insertMeeting(meeting)
-                        return Resource.Success(Pair(meeting, emptyList()))
+                        meetingRepository.insertMeeting(baseMeeting)
+                        return Resource.Success(Pair(baseMeeting, emptyList()))
                     }
                     Resource.Loading -> return Resource.Loading
                     is Resource.Success -> {
-                        val tasks = extractResult.data
+                        val analysis = analysisResult.data
+                        val meeting = baseMeeting.copy(
+                            title = analysis.suggestedMeetingTitle ?: baseMeeting.title,
+                            transcript = analysis.correctedTranscript,
+                            summary = analysis.summary,
+                            decisionsText = analysis.keyDecisions.toMultilineText(),
+                            blockersText = analysis.blockers.toMultilineText(),
+                            followUpsText = analysis.followUps.toMultilineText()
+                        )
+                        val tasks = analysis.tasks
                         meetingRepository.insertMeeting(meeting)
 
                         val updatedTasks = tasks.map { 
@@ -51,5 +70,9 @@ class ProcessMeetingUseCase @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun List<String>.toMultilineText(): String {
+        return joinToString(separator = "\n")
     }
 }

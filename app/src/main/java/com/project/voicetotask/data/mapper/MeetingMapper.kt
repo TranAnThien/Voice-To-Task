@@ -10,7 +10,12 @@ fun MeetingEntity.toDomain(): Meeting {
         date = date,
         duration = duration,
         transcript = transcript,
-        audioFilePath = audioFilePath
+        audioFilePath = audioFilePath,
+        summary = summary,
+        decisionsText = decisionsText,
+        blockersText = blockersText,
+        followUpsText = followUpsText,
+        isConfirmed = isConfirmed
     )
 }
 
@@ -21,6 +26,11 @@ fun Meeting.toEntity(): MeetingEntity {
         date = date,
         duration = duration,
         transcript = transcript,
-        audioFilePath = audioFilePath
+        audioFilePath = audioFilePath,
+        summary = summary,
+        decisionsText = decisionsText,
+        blockersText = blockersText,
+        followUpsText = followUpsText,
+        isConfirmed = isConfirmed
     )
 }

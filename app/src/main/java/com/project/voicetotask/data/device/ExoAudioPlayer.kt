@@ -21,13 +21,14 @@ import java.io.File
 import javax.inject.Inject
 
 class ExoAudioPlayer @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : AudioPlayer {
 
     private var exoPlayer: ExoPlayer? = null
     private val playerStateFlow = MutableStateFlow(PlayerState())
     private var progressJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Main)
+    private var playbackSpeed: Float = 1f
 
     private fun initializePlayer() {
         if (exoPlayer == null) {
@@ -67,6 +68,7 @@ class ExoAudioPlayer @Inject constructor(
                 val mediaItem = MediaItem.fromUri(Uri.fromFile(file))
                 setMediaItem(mediaItem)
                 prepare()
+                setPlaybackSpeed(playbackSpeed)
                 play()
             }
         } catch (e: Exception) {
@@ -102,7 +104,7 @@ class ExoAudioPlayer @Inject constructor(
                 stop()
                 clearMediaItems()
             }
-            updateState { PlayerState() }
+            updateState { PlayerState(playbackSpeed = playbackSpeed) }
         } catch (e: Exception) {
             Log.e("ExoAudioPlayer", "Error stopping player: ${e.message}")
         }
@@ -114,6 +116,17 @@ class ExoAudioPlayer @Inject constructor(
             updateState { it.copy(currentPosition = position) }
         } catch (e: Exception) {
             Log.e("ExoAudioPlayer", "Error seeking: ${e.message}")
+        }
+    }
+
+    override fun setPlaybackSpeed(speed: Float) {
+        val safeSpeed = speed.coerceIn(0.5f, 2f)
+        playbackSpeed = safeSpeed
+        try {
+            exoPlayer?.setPlaybackSpeed(safeSpeed)
+            updateState { it.copy(playbackSpeed = safeSpeed) }
+        } catch (e: Exception) {
+            Log.e("ExoAudioPlayer", "Error setting playback speed: ${e.message}")
         }
     }
 

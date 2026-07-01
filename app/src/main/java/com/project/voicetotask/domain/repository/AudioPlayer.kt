@@ -10,5 +10,6 @@ interface AudioPlayer {
     fun resume()
     fun stop()
     fun seekTo(position: Long)
+    fun setPlaybackSpeed(speed: Float)
     fun getPlayerStateFlow(): Flow<PlayerState>
 }

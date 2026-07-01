@@ -34,7 +34,8 @@ data class PartDto(
 
 @JsonClass(generateAdapter = true)
 data class GenerationConfigDto(
-    val responseMimeType: String? = null
+    val responseMimeType: String? = null,
+    val temperature: Double? = null
 )
 
 // Response DTOs
